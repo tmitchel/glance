@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/pacedotdev/oto/otohttp"
 	"github.com/sirupsen/logrus"
 	"github.com/tmitchel/glance"
@@ -11,8 +14,21 @@ import (
 )
 
 func main() {
-	c := glance.CreateService{}
-	g := glance.GetService{}
+	// load environment variables from .env file
+	err := godotenv.Load()
+	if err != nil {
+		logrus.Error("Error loading .env file")
+	}
+
+	db, err := glance.OpenDatabase(fmt.Sprintf("host=db port=5432 user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB")))
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	c, _ := glance.NewCreateService(db)
+	g, _ := glance.NewGetService(db)
 	server := otohttp.NewServer()
 	generated.RegisterCreateService(server, c)
 	generated.RegisterGetService(server, g)

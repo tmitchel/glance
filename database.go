@@ -32,7 +32,7 @@ type database struct {
 
 // New connects to the postgres database
 // and returns that connection.
-func New(psqlInfo string) (Database, error) {
+func OpenDatabase(psqlInfo string) (Database, error) {
 	for {
 		db, err := sql.Open("postgres", psqlInfo)
 		if err != nil {
