@@ -8,14 +8,18 @@ import (
 	"github.com/tmitchel/glance/generated"
 )
 
+// CreateService wraps the database and implements the CreateService
+// interface from oto.
 type CreateService struct {
 	db Database
 }
 
+// NewCreateService returns a CreateService wrapping the provided database.
 func NewCreateService(db Database) (*CreateService, error) {
 	return &CreateService{db}, nil
 }
 
+// Card creates and saves a new card.
 func (c *CreateService) Card(ctx context.Context, r generated.CreateCardRequest) (*generated.CardResponse, error) {
 	card := Card{
 		ID:        uuid.New(),
@@ -32,6 +36,7 @@ func (c *CreateService) Card(ctx context.Context, r generated.CreateCardRequest)
 	return cardResponse(card), nil
 }
 
+// User creates and saves a new user.
 func (c *CreateService) User(ctx context.Context, r generated.CreateUserRequest) (*generated.UserResponse, error) {
 	user := User{
 		ID:       uuid.New(),
@@ -47,14 +52,18 @@ func (c *CreateService) User(ctx context.Context, r generated.CreateUserRequest)
 	return userResponse(user), nil
 }
 
+// GetService wraps the database and implements the GetService
+// interface from oto.
 type GetService struct {
 	db Database
 }
 
+// NewGetService returns a GetService wrapping the provided database.
 func NewGetService(db Database) (*GetService, error) {
 	return &GetService{db}, nil
 }
 
+// Card returns a single card by ID.
 func (g *GetService) Card(ctx context.Context, r generated.CardRequest) (*generated.CardResponse, error) {
 	card, err := g.db.GetCard(r.ID)
 	if err != nil {
@@ -64,6 +73,7 @@ func (g *GetService) Card(ctx context.Context, r generated.CardRequest) (*genera
 	return cardResponse(card), nil
 }
 
+// Cards returns all cards.
 func (g *GetService) Cards(ctx context.Context, r generated.CardsRequest) (*generated.CardsResponse, error) {
 	cards, err := g.db.GetCards()
 	if err != nil {
@@ -73,6 +83,7 @@ func (g *GetService) Cards(ctx context.Context, r generated.CardsRequest) (*gene
 	return cardsResponse(cards), nil
 }
 
+// User returns a user by email.
 func (g *GetService) User(ctx context.Context, r generated.UserRequest) (*generated.UserResponse, error) {
 	user, err := g.db.GetUser(r.Email)
 	if err != nil {

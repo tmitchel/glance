@@ -12,6 +12,8 @@ import (
 // statement builder using postgres style
 var psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
+// Database provides an interface with methods any underlying database
+// must provide to be used.
 type Database interface {
 	// gets
 	GetCard(string) (Card, error)
@@ -30,7 +32,7 @@ type database struct {
 	*sql.DB
 }
 
-// New connects to the postgres database
+// OpenDatabase connects to the postgres database
 // and returns that connection.
 func OpenDatabase(psqlInfo string) (Database, error) {
 	for {

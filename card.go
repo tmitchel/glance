@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Card represents a single task.
 type Card struct {
 	ID        uuid.UUID
 	Title     string
