@@ -12,34 +12,89 @@ import (
 	uuid "github.com/google/uuid"
 )
 
-type CardService interface {
+type CreateService interface {
+	Card(context.Context, CreateCardRequest) (*CardResponse, error)
+	User(context.Context, CreateUserRequest) (*UserResponse, error)
+}
+
+type GetService interface {
 	Card(context.Context, CardRequest) (*CardResponse, error)
 	Cards(context.Context, CardsRequest) (*CardsResponse, error)
-	New(context.Context, CreateRequest) (*CardResponse, error)
+	User(context.Context, UserRequest) (*UserResponse, error)
 }
 
-type cardServiceServer struct {
-	server      *otohttp.Server
-	cardService CardService
+type createServiceServer struct {
+	server        *otohttp.Server
+	createService CreateService
 }
 
-func RegisterCardService(server *otohttp.Server, cardService CardService) {
-	handler := &cardServiceServer{
-		server:      server,
-		cardService: cardService,
+func RegisterCreateService(server *otohttp.Server, createService CreateService) {
+	handler := &createServiceServer{
+		server:        server,
+		createService: createService,
 	}
-	server.Register("CardService", "Card", handler.handleCard)
-	server.Register("CardService", "Cards", handler.handleCards)
-	server.Register("CardService", "New", handler.handleNew)
+	server.Register("CreateService", "Card", handler.handleCard)
+	server.Register("CreateService", "User", handler.handleUser)
 }
 
-func (s *cardServiceServer) handleCard(w http.ResponseWriter, r *http.Request) {
+func (s *createServiceServer) handleCard(w http.ResponseWriter, r *http.Request) {
+	var request CreateCardRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.createService.Card(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+}
+
+func (s *createServiceServer) handleUser(w http.ResponseWriter, r *http.Request) {
+	var request CreateUserRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.createService.User(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+}
+
+type getServiceServer struct {
+	server     *otohttp.Server
+	getService GetService
+}
+
+func RegisterGetService(server *otohttp.Server, getService GetService) {
+	handler := &getServiceServer{
+		server:     server,
+		getService: getService,
+	}
+	server.Register("GetService", "Card", handler.handleCard)
+	server.Register("GetService", "Cards", handler.handleCards)
+	server.Register("GetService", "User", handler.handleUser)
+}
+
+func (s *getServiceServer) handleCard(w http.ResponseWriter, r *http.Request) {
 	var request CardRequest
 	if err := otohttp.Decode(r, &request); err != nil {
 		s.server.OnErr(w, r, err)
 		return
 	}
-	response, err := s.cardService.Card(r.Context(), request)
+	response, err := s.getService.Card(r.Context(), request)
 	if err != nil {
 		log.Println("TODO: oto service error:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -51,13 +106,13 @@ func (s *cardServiceServer) handleCard(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *cardServiceServer) handleCards(w http.ResponseWriter, r *http.Request) {
+func (s *getServiceServer) handleCards(w http.ResponseWriter, r *http.Request) {
 	var request CardsRequest
 	if err := otohttp.Decode(r, &request); err != nil {
 		s.server.OnErr(w, r, err)
 		return
 	}
-	response, err := s.cardService.Cards(r.Context(), request)
+	response, err := s.getService.Cards(r.Context(), request)
 	if err != nil {
 		log.Println("TODO: oto service error:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -69,13 +124,13 @@ func (s *cardServiceServer) handleCards(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (s *cardServiceServer) handleNew(w http.ResponseWriter, r *http.Request) {
-	var request CreateRequest
+func (s *getServiceServer) handleUser(w http.ResponseWriter, r *http.Request) {
+	var request UserRequest
 	if err := otohttp.Decode(r, &request); err != nil {
 		s.server.OnErr(w, r, err)
 		return
 	}
-	response, err := s.cardService.New(r.Context(), request)
+	response, err := s.getService.User(r.Context(), request)
 	if err != nil {
 		log.Println("TODO: oto service error:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -110,8 +165,25 @@ type CardsResponse struct {
 	Error string         `json:"error,omitempty"`
 }
 
-type CreateRequest struct {
+type CreateCardRequest struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
 	Creator string `json:"creator"`
+}
+
+type CreateUserRequest struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type UserResponse struct {
+	ID    uuid.UUID `json:"id"`
+	Name  string    `json:"name"`
+	Email string    `json:"email"`
+	Error string    `json:"error,omitempty"`
+}
+
+type UserRequest struct {
+	Email string `json:"email"`
 }

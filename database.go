@@ -79,10 +79,10 @@ func (d *database) GetCards() ([]Card, error) {
 	return cards, nil
 }
 
-func (d *database) GetUser(username string) (User, error) {
+func (d *database) GetUser(email string) (User, error) {
 	var user User
 	err := psql.Select("id", "name", "email", "password").
-		From("users").Where(sq.Eq{"name": username}).RunWith(d.DB).QueryRow().
+		From("users").Where(sq.Eq{"email": email}).RunWith(d.DB).QueryRow().
 		Scan(&user.ID, &user.Name, &user.Email, &user.Password)
 	return user, err
 }

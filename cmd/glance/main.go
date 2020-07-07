@@ -11,9 +11,11 @@ import (
 )
 
 func main() {
-	g := glance.CardService{}
+	c := glance.CreateService{}
+	g := glance.GetService{}
 	server := otohttp.NewServer()
-	generated.RegisterCardService(server, g)
+	generated.RegisterCreateService(server, c)
+	generated.RegisterGetService(server, g)
 
 	r := mux.NewRouter()
 	r.PathPrefix("/build").Handler(http.FileServer(http.Dir("frontend/public/")))

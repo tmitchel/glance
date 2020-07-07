@@ -3,7 +3,51 @@
 'use strict';
 
  
-export class CardService {
+export class CreateService {
+	
+	async card(createCardRequest) {
+		const headers = {
+			'Accept':		'application/json',
+			'Accept-Encoding':	'gzip',
+			'Content-Type':		'application/json',
+		}
+		createCardRequest = createCardRequest || {}
+		const response = await fetch('/oto/CreateService.Card', {
+			method: 'POST',
+			headers: headers,
+			body: JSON.stringify(createCardRequest)
+		})
+		return response.json().then((json) => {
+			if (json.error) {
+				throw new Error(json.error)
+			}
+			return json
+		})
+	}
+	
+	async user(createUserRequest) {
+		const headers = {
+			'Accept':		'application/json',
+			'Accept-Encoding':	'gzip',
+			'Content-Type':		'application/json',
+		}
+		createUserRequest = createUserRequest || {}
+		const response = await fetch('/oto/CreateService.User', {
+			method: 'POST',
+			headers: headers,
+			body: JSON.stringify(createUserRequest)
+		})
+		return response.json().then((json) => {
+			if (json.error) {
+				throw new Error(json.error)
+			}
+			return json
+		})
+	}
+	
+}
+ 
+export class GetService {
 	
 	async card(cardRequest) {
 		const headers = {
@@ -12,7 +56,7 @@ export class CardService {
 			'Content-Type':		'application/json',
 		}
 		cardRequest = cardRequest || {}
-		const response = await fetch('/oto/CardService.Card', {
+		const response = await fetch('/oto/GetService.Card', {
 			method: 'POST',
 			headers: headers,
 			body: JSON.stringify(cardRequest)
@@ -32,7 +76,7 @@ export class CardService {
 			'Content-Type':		'application/json',
 		}
 		cardsRequest = cardsRequest || {}
-		const response = await fetch('/oto/CardService.Cards', {
+		const response = await fetch('/oto/GetService.Cards', {
 			method: 'POST',
 			headers: headers,
 			body: JSON.stringify(cardsRequest)
@@ -45,17 +89,17 @@ export class CardService {
 		})
 	}
 	
-	async new(createRequest) {
+	async user(userRequest) {
 		const headers = {
 			'Accept':		'application/json',
 			'Accept-Encoding':	'gzip',
 			'Content-Type':		'application/json',
 		}
-		createRequest = createRequest || {}
-		const response = await fetch('/oto/CardService.New', {
+		userRequest = userRequest || {}
+		const response = await fetch('/oto/GetService.User', {
 			method: 'POST',
 			headers: headers,
-			body: JSON.stringify(createRequest)
+			body: JSON.stringify(userRequest)
 		})
 		return response.json().then((json) => {
 			if (json.error) {

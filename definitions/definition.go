@@ -2,20 +2,21 @@ package definition
 
 import "github.com/google/uuid"
 
-type CardService interface {
-	New(CreateRequest) CardResponse
-	Card(CardRequest) CardResponse
-	Cards(CardsRequest) CardsResponse
+type CreateService interface {
+	Card(CreateCardRequest) CardResponse
+	User(CreateUserRequest) UserResponse
 }
 
-type CreateRequest struct {
+type GetService interface {
+	Card(CardRequest) CardResponse
+	Cards(CardsRequest) CardsResponse
+	User(UserRequest) UserResponse
+}
+
+type CreateCardRequest struct {
 	Title   string
 	Content string
 	Creator string
-}
-
-type CardRequest struct {
-	ID string
 }
 
 type CardResponse struct {
@@ -26,6 +27,26 @@ type CardResponse struct {
 	Creator   uuid.UUID
 	Volunteer uuid.UUID
 	CreatedAt string
+}
+
+type CreateUserRequest struct {
+	Name     string
+	Email    string
+	Password string
+}
+
+type UserResponse struct {
+	ID    uuid.UUID
+	Name  string
+	Email string
+}
+
+type CardRequest struct {
+	ID string
+}
+
+type UserRequest struct {
+	Email string
 }
 
 type CardsRequest struct{}
