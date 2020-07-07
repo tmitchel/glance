@@ -3,8 +3,15 @@ package definition
 import "github.com/google/uuid"
 
 type CardService interface {
-	Cards(CardsRequest) CardsResponse
+	New(CreateRequest) CardResponse
 	Card(CardRequest) CardResponse
+	Cards(CardsRequest) CardsResponse
+}
+
+type CreateRequest struct {
+	Title   string
+	Content string
+	Creator string
 }
 
 type CardRequest struct {

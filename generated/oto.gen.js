@@ -45,5 +45,25 @@ export class CardService {
 		})
 	}
 	
+	async new(createRequest) {
+		const headers = {
+			'Accept':		'application/json',
+			'Accept-Encoding':	'gzip',
+			'Content-Type':		'application/json',
+		}
+		createRequest = createRequest || {}
+		const response = await fetch('/oto/CardService.New', {
+			method: 'POST',
+			headers: headers,
+			body: JSON.stringify(createRequest)
+		})
+		return response.json().then((json) => {
+			if (json.error) {
+				throw new Error(json.error)
+			}
+			return json
+		})
+	}
+	
 }
 

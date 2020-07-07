@@ -15,6 +15,7 @@ import (
 type CardService interface {
 	Card(context.Context, CardRequest) (*CardResponse, error)
 	Cards(context.Context, CardsRequest) (*CardsResponse, error)
+	New(context.Context, CreateRequest) (*CardResponse, error)
 }
 
 type cardServiceServer struct {
@@ -29,6 +30,7 @@ func RegisterCardService(server *otohttp.Server, cardService CardService) {
 	}
 	server.Register("CardService", "Card", handler.handleCard)
 	server.Register("CardService", "Cards", handler.handleCards)
+	server.Register("CardService", "New", handler.handleNew)
 }
 
 func (s *cardServiceServer) handleCard(w http.ResponseWriter, r *http.Request) {
@@ -67,6 +69,24 @@ func (s *cardServiceServer) handleCards(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+func (s *cardServiceServer) handleNew(w http.ResponseWriter, r *http.Request) {
+	var request CreateRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.cardService.New(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+}
+
 type CardRequest struct {
 	ID string `json:"id"`
 }
@@ -88,4 +108,10 @@ type CardsRequest struct {
 type CardsResponse struct {
 	Cards []CardResponse `json:"cards"`
 	Error string         `json:"error,omitempty"`
+}
+
+type CreateRequest struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Creator string `json:"creator"`
 }
