@@ -20,7 +20,7 @@ func main() {
 		logrus.Error("Error loading .env file")
 	}
 
-	db, err := glance.OpenDatabase(fmt.Sprintf("host=db port=5432 user=%s "+
+	db, err := glance.OpenDatabase(fmt.Sprintf("host=localhost port=5432 user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB")))
 	if err != nil {
@@ -35,6 +35,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.PathPrefix("/build").Handler(http.FileServer(http.Dir("frontend/public/")))
+	r.PathPrefix("/deps").Handler(http.FileServer(http.Dir("frontend/public/")))
 	r.PathPrefix("/oto").Handler(server)
 	r.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "frontend/public/index.html")

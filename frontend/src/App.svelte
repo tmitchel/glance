@@ -3,7 +3,6 @@
 	import SignIn from "./SignIn.svelte";
 	import Home from "./Home.svelte";
 	import Error from "./Error.svelte";
-	export let name;
 	let page;
 	let params;
 
@@ -11,12 +10,18 @@
 	router("/home", () => page = Home)
 	router("/*", () => page = Error)
 	router.start();
+	function handleClick() {
+		alert('no more alerts')
+	}
 </script>
 <svelte:component this={page} params={params}></svelte:component>
 
 <main>
-	<h1>Hello {name}!</h1>
+	<h1>Glance!!</h1>
 	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
+	<button class="ui button" on:click|once={handleClick}>
+		Follow
+	</button>
 </main>
 
 
