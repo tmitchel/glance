@@ -5,6 +5,7 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	_ "github.com/lib/pq" // postgres drivers
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
