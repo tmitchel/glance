@@ -93,6 +93,16 @@ func (g *GetService) User(ctx context.Context, r generated.UserRequest) (*genera
 	return userResponse(user), nil
 }
 
+// Users returns all Users.
+func (g *GetService) Users(ctx context.Context, r generated.UsersRequest) (*generated.UsersResponse, error) {
+	users, err := g.db.GetUsers()
+	if err != nil {
+		return &generated.UsersResponse{Error: err.Error()}, err
+	}
+
+	return usersResponse(users), nil
+}
+
 func cardResponse(c Card) *generated.CardResponse {
 	return &generated.CardResponse{
 		ID:        c.ID,
@@ -118,4 +128,12 @@ func userResponse(u User) *generated.UserResponse {
 		Name:  u.Name,
 		Email: u.Email,
 	}
+}
+
+func usersResponse(u []User) *generated.UsersResponse {
+	users := make([]generated.UserResponse, len(u))
+	for i, user := range u {
+		users[i] = *userResponse(user)
+	}
+	return &generated.UsersResponse{Users: users}
 }

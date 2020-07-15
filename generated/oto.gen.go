@@ -21,6 +21,7 @@ type GetService interface {
 	Card(context.Context, CardRequest) (*CardResponse, error)
 	Cards(context.Context, CardsRequest) (*CardsResponse, error)
 	User(context.Context, UserRequest) (*UserResponse, error)
+	Users(context.Context, UsersRequest) (*UsersResponse, error)
 }
 
 type createServiceServer struct {
@@ -86,6 +87,7 @@ func RegisterGetService(server *otohttp.Server, getService GetService) {
 	server.Register("GetService", "Card", handler.handleCard)
 	server.Register("GetService", "Cards", handler.handleCards)
 	server.Register("GetService", "User", handler.handleUser)
+	server.Register("GetService", "Users", handler.handleUsers)
 }
 
 func (s *getServiceServer) handleCard(w http.ResponseWriter, r *http.Request) {
@@ -142,6 +144,24 @@ func (s *getServiceServer) handleUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *getServiceServer) handleUsers(w http.ResponseWriter, r *http.Request) {
+	var request UsersRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.getService.Users(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+}
+
 type CardRequest struct {
 	ID string `json:"id"`
 }
@@ -186,4 +206,12 @@ type UserResponse struct {
 
 type UserRequest struct {
 	Email string `json:"email"`
+}
+
+type UsersRequest struct {
+}
+
+type UsersResponse struct {
+	Users []UserResponse `json:"users"`
+	Error string         `json:"error,omitempty"`
 }

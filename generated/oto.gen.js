@@ -109,5 +109,25 @@ export class GetService {
 		})
 	}
 	
+	async users(usersRequest) {
+		const headers = {
+			'Accept':		'application/json',
+			'Accept-Encoding':	'gzip',
+			'Content-Type':		'application/json',
+		}
+		usersRequest = usersRequest || {}
+		const response = await fetch('/oto/GetService.Users', {
+			method: 'POST',
+			headers: headers,
+			body: JSON.stringify(usersRequest)
+		})
+		return response.json().then((json) => {
+			if (json.error) {
+				throw new Error(json.error)
+			}
+			return json
+		})
+	}
+	
 }
 

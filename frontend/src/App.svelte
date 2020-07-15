@@ -14,7 +14,6 @@
 		alert('no more alerts')
 	}
 </script>
-<svelte:component this={page} params={params}></svelte:component>
 
 <main>
 	<h1>Glance!!</h1>
@@ -23,6 +22,7 @@
 		Follow
 	</button>
 </main>
+<svelte:component this={page} params={params}></svelte:component>
 
 
 <style>

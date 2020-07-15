@@ -20,6 +20,7 @@ type Database interface {
 	GetCard(string) (Card, error)
 	GetCards() ([]Card, error)
 	GetUser(string) (User, error)
+	GetUsers() ([]User, error)
 
 	// creates
 	CreateCard(Card) error
@@ -88,6 +89,26 @@ func (d *database) GetUser(email string) (User, error) {
 		From("users").Where(sq.Eq{"email": email}).RunWith(d.DB).QueryRow().
 		Scan(&user.ID, &user.Name, &user.Email, &user.Password)
 	return user, err
+}
+
+func (d *database) GetUsers() ([]User, error) {
+	var users []User
+	rows, err := psql.Select("id", "name", "email", "password").
+		From("users").RunWith(d.DB).Query()
+	if err != nil {
+		return users, nil
+	}
+
+	for rows.Next() {
+		var user User
+		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password)
+		if err != nil {
+			continue
+		}
+		users = append(users, user)
+	}
+
+	return users, err
 }
 
 func (d *database) CreateCard(c Card) error {
