@@ -21,10 +21,12 @@ type Database interface {
 	GetCards() ([]Card, error)
 	GetUser(string) (User, error)
 	GetUsers() ([]User, error)
+	GetUserCurrentCard(string) (Card, error)
 
 	// creates
 	CreateCard(Card) error
 	CreateUser(User) error
+	ClaimCard(string, string) error
 
 	Close()
 }
@@ -57,7 +59,7 @@ func OpenDatabase(psqlInfo string) (Database, error) {
 
 func (d *database) GetCard(id string) (Card, error) {
 	var card Card
-	err := psql.Select("id", "title", "content", "status", "creator", "volunter", "created_at").
+	err := psql.Select("id", "title", "content", "status", "creator", "volunteer", "created_at").
 		From("cards").Where(sq.Eq{"id": id}).RunWith(d.DB).QueryRow().
 		Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Volunteer, &card.CreatedAt)
 	return card, err
@@ -111,6 +113,15 @@ func (d *database) GetUsers() ([]User, error) {
 	return users, err
 }
 
+func (d *database) GetUserCurrentCard(id string) (Card, error) {
+	var card Card
+	err := psql.Select("id", "title", "content", "status", "creator", "volunteer", "created_at").
+		From("cards").Join("cards_users cu ON (cu.card_id = id)").Where(sq.Eq{"cu.user_id": "id"}).
+		RunWith(d.DB).QueryRow().
+		Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Volunteer, &card.CreatedAt)
+	return card, err
+}
+
 func (d *database) CreateCard(c Card) error {
 	_, err := psql.Insert("cards").
 		Columns("id", "title", "content", "status", "creator", "volunteer", "created_at").
@@ -123,6 +134,14 @@ func (d *database) CreateUser(u User) error {
 	_, err := psql.Insert("users").
 		Columns("id", "name", "email", "password").
 		Values(u.ID, u.Name, u.Email, u.Password).
+		RunWith(d.DB).Exec()
+	return err
+}
+
+func (d *database) ClaimCard(uid, cid string) error {
+	_, err := psql.Insert("cards_users").
+		Columns("card_id", "user_id").
+		Values(uid, cid).
 		RunWith(d.DB).Exec()
 	return err
 }

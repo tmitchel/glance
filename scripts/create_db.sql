@@ -17,3 +17,11 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+DROP TABLE IF EXISTS cards_users CASCADE;
+CREATE TABLE cards_users (
+    card_id VARCHAR(36),
+    user_id VARCHAR(36),
+    FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+)

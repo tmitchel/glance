@@ -12,6 +12,7 @@ type GetService interface {
 	Cards(CardsRequest) CardsResponse
 	User(UserRequest) UserResponse
 	Users(UsersRequest) UsersResponse
+	HomePage(UserRequest) HomePageResponse
 }
 
 type CreateCardRequest struct {
@@ -60,4 +61,12 @@ type CardsRequest struct{}
 
 type CardsResponse struct {
 	Cards []CardResponse
+}
+
+type HomePageResponse struct {
+	User  *UserResponse
+	Pairs []struct {
+		User *UserResponse
+		Card *CardResponse
+	}
 }

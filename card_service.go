@@ -103,6 +103,36 @@ func (g *GetService) Users(ctx context.Context, r generated.UsersRequest) (*gene
 	return usersResponse(users), nil
 }
 
+func (g *GetService) HomePage(ctx context.Context, r generated.UserRequest) (*generated.HomePageResponse, error) {
+	user, err := g.db.GetUser(r.Email)
+	if err != nil {
+		return &generated.HomePageResponse{Error: err.Error()}, err
+	}
+
+	users, err := g.db.GetUsers()
+	if err != nil {
+		return &generated.HomePageResponse{Error: err.Error()}, err
+	}
+
+	pairs := make([]struct {
+		User *generated.UserResponse
+		Card *generated.CardResponse
+	}, len(users))
+
+	for i, u := range users {
+		card, _ := g.db.GetUserCurrentCard(u.ID.String())
+		pairs[i] = struct {
+			User *generated.UserResponse
+			Card *generated.CardResponse
+		}{User: userResponse(u), Card: cardResponse(card)}
+	}
+
+	return &generated.HomePageResponse{
+		User:  userResponse(user),
+		Pairs: pairs,
+	}, nil
+}
+
 func cardResponse(c Card) *generated.CardResponse {
 	return &generated.CardResponse{
 		ID:        c.ID,

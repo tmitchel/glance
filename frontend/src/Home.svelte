@@ -19,9 +19,15 @@
     }
   }()
 
+  // createService.user({
+  //   name: "test-name",
+  //   email: "test-email",
+  //   password: "test-password"
+  // });
+
   let userPromise = async function() {
     try {
-      return await getService.users({});
+      return await getService.homePage({email: "test-email"});
     } catch(err) {
       console.log(err)
     }
@@ -56,10 +62,11 @@
       </div>
     </div>
   {:then msg}
-    {#each msg.users as user}
+  <pre>{msg}</pre>
+    {#each msg.pairs as pair}
       <div class="ui segment">
-        <!-- <h1>{user.name}</h1> -->
-        <h1>User Name</h1>
+        <h1>{pair.User.name}</h1>
+        <h3>{pair.Card.title || "card title"}</h3>
       </div>
     {/each}
   {:catch error}
