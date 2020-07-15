@@ -5,7 +5,7 @@ CREATE TABLE cards (
     content TEXT NOT NULL,
     status INT DEFAULT 0,
     creator VARCHAR(36) NOT NULL,
-    volunteer VARCHAR(36),
+    claimed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

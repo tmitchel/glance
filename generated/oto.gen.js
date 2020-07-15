@@ -25,6 +25,46 @@ export class CreateService {
 		})
 	}
 	
+	async claimCard(claimRequest) {
+		const headers = {
+			'Accept':		'application/json',
+			'Accept-Encoding':	'gzip',
+			'Content-Type':		'application/json',
+		}
+		claimRequest = claimRequest || {}
+		const response = await fetch('/oto/CreateService.ClaimCard', {
+			method: 'POST',
+			headers: headers,
+			body: JSON.stringify(claimRequest)
+		})
+		return response.json().then((json) => {
+			if (json.error) {
+				throw new Error(json.error)
+			}
+			return json
+		})
+	}
+	
+	async updateStatus(newStatusRequest) {
+		const headers = {
+			'Accept':		'application/json',
+			'Accept-Encoding':	'gzip',
+			'Content-Type':		'application/json',
+		}
+		newStatusRequest = newStatusRequest || {}
+		const response = await fetch('/oto/CreateService.UpdateStatus', {
+			method: 'POST',
+			headers: headers,
+			body: JSON.stringify(newStatusRequest)
+		})
+		return response.json().then((json) => {
+			if (json.error) {
+				throw new Error(json.error)
+			}
+			return json
+		})
+	}
+	
 	async user(createUserRequest) {
 		const headers = {
 			'Accept':		'application/json',
@@ -69,17 +109,17 @@ export class GetService {
 		})
 	}
 	
-	async cards(cardsRequest) {
+	async cards(emptyRequest) {
 		const headers = {
 			'Accept':		'application/json',
 			'Accept-Encoding':	'gzip',
 			'Content-Type':		'application/json',
 		}
-		cardsRequest = cardsRequest || {}
+		emptyRequest = emptyRequest || {}
 		const response = await fetch('/oto/GetService.Cards', {
 			method: 'POST',
 			headers: headers,
-			body: JSON.stringify(cardsRequest)
+			body: JSON.stringify(emptyRequest)
 		})
 		return response.json().then((json) => {
 			if (json.error) {
@@ -129,17 +169,17 @@ export class GetService {
 		})
 	}
 	
-	async users(usersRequest) {
+	async users(emptyRequest) {
 		const headers = {
 			'Accept':		'application/json',
 			'Accept-Encoding':	'gzip',
 			'Content-Type':		'application/json',
 		}
-		usersRequest = usersRequest || {}
+		emptyRequest = emptyRequest || {}
 		const response = await fetch('/oto/GetService.Users', {
 			method: 'POST',
 			headers: headers,
-			body: JSON.stringify(usersRequest)
+			body: JSON.stringify(emptyRequest)
 		})
 		return response.json().then((json) => {
 			if (json.error) {

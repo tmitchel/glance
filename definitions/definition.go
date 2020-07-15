@@ -5,13 +5,15 @@ import "github.com/google/uuid"
 type CreateService interface {
 	Card(CreateCardRequest) CardResponse
 	User(CreateUserRequest) UserResponse
+	ClaimCard(ClaimRequest) CardResponse
+	UpdateStatus(NewStatusRequest) CardResponse
 }
 
 type GetService interface {
 	Card(CardRequest) CardResponse
-	Cards(CardsRequest) CardsResponse
+	Cards(EmptyRequest) CardsResponse
 	User(UserRequest) UserResponse
-	Users(UsersRequest) UsersResponse
+	Users(EmptyRequest) UsersResponse
 	HomePage(UserRequest) HomePageResponse
 }
 
@@ -21,20 +23,31 @@ type CreateCardRequest struct {
 	Creator string
 }
 
+type CreateUserRequest struct {
+	Name     string
+	Email    string
+	Password string
+}
+
+type ClaimRequest struct {
+	UserID string
+	CardID string
+}
+
+type NewStatusRequest struct {
+	Status int
+	Card   string
+	User   string
+}
+
 type CardResponse struct {
 	ID        uuid.UUID
 	Title     string
 	Content   string
 	Status    int
 	Creator   uuid.UUID
-	Volunteer uuid.UUID
+	Claimed   bool
 	CreatedAt string
-}
-
-type CreateUserRequest struct {
-	Name     string
-	Email    string
-	Password string
 }
 
 type UserResponse struct {
@@ -51,13 +64,11 @@ type UserRequest struct {
 	Email string
 }
 
-type UsersRequest struct{}
+type EmptyRequest struct{}
 
 type UsersResponse struct {
 	Users []UserResponse
 }
-
-type CardsRequest struct{}
 
 type CardsResponse struct {
 	Cards []CardResponse

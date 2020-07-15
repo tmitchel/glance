@@ -19,6 +19,8 @@ type Database interface {
 	// gets
 	GetCard(string) (Card, error)
 	GetCards() ([]Card, error)
+	GetClaimedCards() ([]Card, error)
+	GetUnclaimedCards() ([]Card, error)
 	GetUser(string) (User, error)
 	GetUsers() ([]User, error)
 	GetUserCurrentCard(string) (Card, error)
@@ -26,7 +28,8 @@ type Database interface {
 	// creates
 	CreateCard(Card) error
 	CreateUser(User) error
-	ClaimCard(string, string) error
+	ClaimCard(string, string) (Card, error)
+	UpdateStatus(string, string, int) (Card, error)
 
 	Close()
 }
@@ -59,15 +62,15 @@ func OpenDatabase(psqlInfo string) (Database, error) {
 
 func (d *database) GetCard(id string) (Card, error) {
 	var card Card
-	err := psql.Select("id", "title", "content", "status", "creator", "volunteer", "created_at").
+	err := psql.Select("id", "title", "content", "status", "creator", "claimed", "created_at").
 		From("cards").Where(sq.Eq{"id": id}).RunWith(d.DB).QueryRow().
-		Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Volunteer, &card.CreatedAt)
+		Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Claimed, &card.CreatedAt)
 	return card, err
 }
 
 func (d *database) GetCards() ([]Card, error) {
 	var cards []Card
-	rows, err := psql.Select("id", "title", "content", "status", "creator", "volunteer", "created_at").
+	rows, err := psql.Select("id", "title", "content", "status", "creator", "claimed", "created_at").
 		From("cards").RunWith(d.DB).Query()
 	if err != nil {
 		return cards, nil
@@ -75,7 +78,47 @@ func (d *database) GetCards() ([]Card, error) {
 
 	for rows.Next() {
 		var card Card
-		err := rows.Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Volunteer, &card.CreatedAt)
+		err := rows.Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Claimed, &card.CreatedAt)
+		if err != nil {
+			continue
+		}
+		cards = append(cards, card)
+	}
+
+	return cards, nil
+}
+
+func (d *database) GetClaimedCards() ([]Card, error) {
+	var cards []Card
+	rows, err := psql.Select("id", "title", "content", "status", "creator", "claimed", "created_at").
+		From("cards").Where(sq.Eq{"claimed": true}).RunWith(d.DB).Query()
+	if err != nil {
+		return cards, nil
+	}
+
+	for rows.Next() {
+		var card Card
+		err := rows.Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Claimed, &card.CreatedAt)
+		if err != nil {
+			continue
+		}
+		cards = append(cards, card)
+	}
+
+	return cards, nil
+}
+
+func (d *database) GetUnclaimedCards() ([]Card, error) {
+	var cards []Card
+	rows, err := psql.Select("id", "title", "content", "status", "creator", "claimed", "created_at").
+		From("cards").Where(sq.Eq{"claimed": false}).RunWith(d.DB).Query()
+	if err != nil {
+		return cards, nil
+	}
+
+	for rows.Next() {
+		var card Card
+		err := rows.Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Claimed, &card.CreatedAt)
 		if err != nil {
 			continue
 		}
@@ -115,17 +158,17 @@ func (d *database) GetUsers() ([]User, error) {
 
 func (d *database) GetUserCurrentCard(id string) (Card, error) {
 	var card Card
-	err := psql.Select("id", "title", "content", "status", "creator", "volunteer", "created_at").
-		From("cards").Join("cards_users cu ON (cu.card_id = id)").Where(sq.Eq{"cu.user_id": "id"}).
+	err := psql.Select("id", "title", "content", "status", "creator", "claimed", "created_at").
+		From("cards").Join("cards_users cu ON (cu.card_id = id)").Where(sq.Eq{"cu.user_id": id}).
 		RunWith(d.DB).QueryRow().
-		Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Volunteer, &card.CreatedAt)
+		Scan(&card.ID, &card.Title, &card.Content, &card.Status, &card.Creator, &card.Claimed, &card.CreatedAt)
 	return card, err
 }
 
 func (d *database) CreateCard(c Card) error {
 	_, err := psql.Insert("cards").
-		Columns("id", "title", "content", "status", "creator", "volunteer", "created_at").
-		Values(c.ID, c.Title, c.Content, c.Status, c.Creator, c.Volunteer, c.CreatedAt).
+		Columns("id", "title", "content", "status", "creator", "claimed", "created_at").
+		Values(c.ID, c.Title, c.Content, c.Status, c.Creator, c.Claimed, c.CreatedAt).
 		RunWith(d.DB).Exec()
 	return err
 }
@@ -135,15 +178,50 @@ func (d *database) CreateUser(u User) error {
 		Columns("id", "name", "email", "password").
 		Values(u.ID, u.Name, u.Email, u.Password).
 		RunWith(d.DB).Exec()
+	if err != nil {
+		return err
+	}
+
+	_, err = psql.Insert("cards_users").
+		Columns("user_id", "card_id").
+		Values(u.ID, nil).
+		RunWith(d.DB).Exec()
+
 	return err
 }
 
-func (d *database) ClaimCard(uid, cid string) error {
+func (d *database) ClaimCard(uid, cid string) (Card, error) {
+	var c Card
 	_, err := psql.Insert("cards_users").
-		Columns("card_id", "user_id").
+		Columns("user_id", "card_id").
 		Values(uid, cid).
 		RunWith(d.DB).Exec()
-	return err
+	if err != nil {
+		return c, err
+	}
+
+	_, err = psql.Update("cards").Set("claimed", true).Where(sq.Eq{"id": cid}).RunWith(d.DB).Exec()
+	if err != nil {
+		return c, err
+	}
+
+	err = psql.Select("id", "title", "content", "status", "creator", "claimed", "created_at").
+		From("cards").Where(sq.Eq{"id": cid}).RunWith(d.DB).QueryRow().
+		Scan(&c.ID, &c.Title, &c.Content, &c.Status, &c.Creator, &c.Claimed, &c.CreatedAt)
+	return c, err
+}
+
+func (d *database) UpdateStatus(cid, uid string, status int) (Card, error) {
+	var c Card
+	_, err := psql.Update("cards").Set("status", status).Where(sq.Eq{"id": cid}).RunWith(d.DB).Exec()
+	if err != nil {
+		return c, err
+	}
+
+	err = psql.Select("id", "title", "content", "status", "creator", "claimed", "created_at").
+		From("cards").Where(sq.Eq{"id": cid}).RunWith(d.DB).QueryRow().
+		Scan(&c.ID, &c.Title, &c.Content, &c.Status, &c.Creator, &c.Claimed, &c.CreatedAt)
+	return c, err
 }
 
 // Close closes the database.

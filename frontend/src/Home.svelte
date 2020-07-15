@@ -20,24 +20,24 @@
   }()
 
   // createService.user({
-  //   name: "test-name",
-  //   email: "test-email",
+  //   name: "Tyler Mitchell",
+  //   email: "tylerbmitchell6@gmail.com",
   //   password: "test-password"
+  // });
+
+  // createService.card({
+  //   title: "Test Card",
+  //   content: "Test card content is here....",
+  //   Creator: "888aabf9-6289-4b74-afc6-976a4a74ad4a"
   // });
 
   let userPromise = async function() {
     try {
-      return await getService.homePage({email: "test-email"});
+      return await getService.homePage({email: "tylerbmitchell6@gmail.com"});
     } catch(err) {
       console.log(err)
     }
   }()
-
-  // createService.card({
-  //   title: "card title",
-  //   content: "card content",
-  //   Creator: "11111111-1111-1111-1111-111111111111"
-  // });
   
   function color(status) {
     if (status === 1) {
@@ -54,7 +54,8 @@
 
 </script>
 
-<div>
+<h1>Users</h1>
+<div class="ui five cards">
   {#await userPromise}
     <div class="ui segment">
       <div class="ui active dimmer">
@@ -62,11 +63,19 @@
       </div>
     </div>
   {:then msg}
-  <pre>{msg}</pre>
     {#each msg.pairs as pair}
-      <div class="ui segment">
-        <h1>{pair.User.name}</h1>
-        <h3>{pair.Card.title || "card title"}</h3>
+      <div class="ui card">
+        <div class="content">
+          <h1 class="header">{pair.User.name}</h1>
+          <div class="ui {color(pair.Card.status)} card">
+            <div class="content">
+              <h3 class="header">{pair.Card.title || "card title"}</h3>
+              <div class="description">
+                {pair.Card.content}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     {/each}
   {:catch error}
@@ -74,7 +83,7 @@
   {/await}
 </div>
 
-<div class="ui container">
+<!-- <div class="ui container">
   <form class="ui form">
     <div class="field">
       <label>Title</label>
@@ -86,8 +95,9 @@
     </div>
     <button class="ui button" type="submit">Submit</button>
   </form>
-</div>
+</div> -->
 
+<h1>Unclaimed Cards</h1>
 <div class="ui cards">
   {#await cardPromise}
     <div class="ui segment">

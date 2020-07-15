@@ -14,15 +14,17 @@ import (
 
 type CreateService interface {
 	Card(context.Context, CreateCardRequest) (*CardResponse, error)
+	ClaimCard(context.Context, ClaimRequest) (*CardResponse, error)
+	UpdateStatus(context.Context, NewStatusRequest) (*CardResponse, error)
 	User(context.Context, CreateUserRequest) (*UserResponse, error)
 }
 
 type GetService interface {
 	Card(context.Context, CardRequest) (*CardResponse, error)
-	Cards(context.Context, CardsRequest) (*CardsResponse, error)
+	Cards(context.Context, EmptyRequest) (*CardsResponse, error)
 	HomePage(context.Context, UserRequest) (*HomePageResponse, error)
 	User(context.Context, UserRequest) (*UserResponse, error)
-	Users(context.Context, UsersRequest) (*UsersResponse, error)
+	Users(context.Context, EmptyRequest) (*UsersResponse, error)
 }
 
 type createServiceServer struct {
@@ -36,6 +38,8 @@ func RegisterCreateService(server *otohttp.Server, createService CreateService) 
 		createService: createService,
 	}
 	server.Register("CreateService", "Card", handler.handleCard)
+	server.Register("CreateService", "ClaimCard", handler.handleClaimCard)
+	server.Register("CreateService", "UpdateStatus", handler.handleUpdateStatus)
 	server.Register("CreateService", "User", handler.handleUser)
 }
 
@@ -46,6 +50,42 @@ func (s *createServiceServer) handleCard(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	response, err := s.createService.Card(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+}
+
+func (s *createServiceServer) handleClaimCard(w http.ResponseWriter, r *http.Request) {
+	var request ClaimRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.createService.ClaimCard(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+}
+
+func (s *createServiceServer) handleUpdateStatus(w http.ResponseWriter, r *http.Request) {
+	var request NewStatusRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.createService.UpdateStatus(r.Context(), request)
 	if err != nil {
 		log.Println("TODO: oto service error:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -111,7 +151,7 @@ func (s *getServiceServer) handleCard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *getServiceServer) handleCards(w http.ResponseWriter, r *http.Request) {
-	var request CardsRequest
+	var request EmptyRequest
 	if err := otohttp.Decode(r, &request); err != nil {
 		s.server.OnErr(w, r, err)
 		return
@@ -165,7 +205,7 @@ func (s *getServiceServer) handleUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *getServiceServer) handleUsers(w http.ResponseWriter, r *http.Request) {
-	var request UsersRequest
+	var request EmptyRequest
 	if err := otohttp.Decode(r, &request); err != nil {
 		s.server.OnErr(w, r, err)
 		return
@@ -192,12 +232,9 @@ type CardResponse struct {
 	Content   string    `json:"content"`
 	Status    int       `json:"status"`
 	Creator   uuid.UUID `json:"creator"`
-	Volunteer uuid.UUID `json:"volunteer"`
+	Claimed   bool      `json:"claimed"`
 	CreatedAt string    `json:"createdAt"`
 	Error     string    `json:"error,omitempty"`
-}
-
-type CardsRequest struct {
 }
 
 type CardsResponse struct {
@@ -205,10 +242,21 @@ type CardsResponse struct {
 	Error string         `json:"error,omitempty"`
 }
 
+type ClaimRequest struct {
+	UserID string `json:"userID"`
+	CardID string `json:"cardID"`
+}
+
 type CreateCardRequest struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
 	Creator string `json:"creator"`
+}
+
+type NewStatusRequest struct {
+	Status int    `json:"status"`
+	Card   string `json:"card"`
+	User   string `json:"user"`
 }
 
 type CreateUserRequest struct {
@@ -224,6 +272,9 @@ type UserResponse struct {
 	Error string    `json:"error,omitempty"`
 }
 
+type EmptyRequest struct {
+}
+
 type UserRequest struct {
 	Email string `json:"email"`
 }
@@ -235,9 +286,6 @@ type HomePageResponse struct {
 		Card *CardResponse
 	} `json:"pairs"`
 	Error string `json:"error,omitempty"`
-}
-
-type UsersRequest struct {
 }
 
 type UsersResponse struct {

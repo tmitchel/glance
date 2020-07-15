@@ -13,6 +13,6 @@ type Card struct {
 	Content   string
 	Status    int
 	Creator   uuid.UUID
-	Volunteer uuid.UUID
+	Claimed   bool
 	CreatedAt time.Time
 }

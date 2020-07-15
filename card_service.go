@@ -52,6 +52,24 @@ func (c *CreateService) User(ctx context.Context, r generated.CreateUserRequest)
 	return userResponse(user), nil
 }
 
+func (c *CreateService) ClaimCard(ctx context.Context, r generated.ClaimRequest) (*generated.CardResponse, error) {
+	card, err := c.db.ClaimCard(r.UserID, r.CardID)
+	if err != nil {
+		return &generated.CardResponse{Error: err.Error()}, err
+	}
+
+	return cardResponse(card), nil
+}
+
+func (c *CreateService) UpdateStatus(ct context.Context, r generated.NewStatusRequest) (*generated.CardResponse, error) {
+	card, err := c.db.UpdateStatus(r.Card, r.User, r.Status)
+	if err != nil {
+		return &generated.CardResponse{Error: err.Error()}, err
+	}
+
+	return cardResponse(card), nil
+}
+
 // GetService wraps the database and implements the GetService
 // interface from oto.
 type GetService struct {
@@ -74,8 +92,8 @@ func (g *GetService) Card(ctx context.Context, r generated.CardRequest) (*genera
 }
 
 // Cards returns all cards.
-func (g *GetService) Cards(ctx context.Context, r generated.CardsRequest) (*generated.CardsResponse, error) {
-	cards, err := g.db.GetCards()
+func (g *GetService) Cards(ctx context.Context, r generated.EmptyRequest) (*generated.CardsResponse, error) {
+	cards, err := g.db.GetUnclaimedCards()
 	if err != nil {
 		return &generated.CardsResponse{Error: err.Error()}, err
 	}
@@ -94,7 +112,7 @@ func (g *GetService) User(ctx context.Context, r generated.UserRequest) (*genera
 }
 
 // Users returns all Users.
-func (g *GetService) Users(ctx context.Context, r generated.UsersRequest) (*generated.UsersResponse, error) {
+func (g *GetService) Users(ctx context.Context, r generated.EmptyRequest) (*generated.UsersResponse, error) {
 	users, err := g.db.GetUsers()
 	if err != nil {
 		return &generated.UsersResponse{Error: err.Error()}, err
@@ -139,8 +157,9 @@ func cardResponse(c Card) *generated.CardResponse {
 		Title:     c.Title,
 		Content:   c.Content,
 		Creator:   c.Creator,
-		Volunteer: c.Volunteer,
+		Claimed:   c.Claimed,
 		CreatedAt: c.Creator.String(),
+		Status:    c.Status,
 	}
 }
 
