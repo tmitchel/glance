@@ -77,4 +77,4 @@
 <svelte:component this={Summary} cardColumns={cardColumns} userPromise={userPromise} color={color} openTask={openTask}></svelte:component>
 <svelte:component this={Unclaimed} cardColumns={cardColumns} cardPromise={cardPromise} openTask={openTask}></svelte:component>
 <svelte:component this={Create} createService={createService}></svelte:component>
-<svelte:component this={Task} card={card} volunteer={volunteer}  createService={createService}></svelte:component>
+<svelte:component this={Task} card={card} volunteer={volunteer}  createService={createService} usersCardID={userPromise}></svelte:component>
