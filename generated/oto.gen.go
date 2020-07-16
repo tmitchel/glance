@@ -281,6 +281,7 @@ type UserRequest struct {
 
 type HomePageResponse struct {
 	User  *UserResponse `json:"user"`
+	Card  *CardResponse `json:"card"`
 	Pairs []struct {
 		User *UserResponse
 		Card *CardResponse

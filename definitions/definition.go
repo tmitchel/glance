@@ -76,6 +76,7 @@ type CardsResponse struct {
 
 type HomePageResponse struct {
 	User  *UserResponse
+	Card  *CardResponse
 	Pairs []struct {
 		User *UserResponse
 		Card *CardResponse

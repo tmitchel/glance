@@ -145,8 +145,14 @@ func (g *GetService) HomePage(ctx context.Context, r generated.UserRequest) (*ge
 		}{User: userResponse(u), Card: cardResponse(card)}
 	}
 
+	card, err := g.db.GetUserCurrentCard(user.ID.String())
+	if err != nil {
+
+	}
+
 	return &generated.HomePageResponse{
 		User:  userResponse(user),
+		Card:  cardResponse(card),
 		Pairs: pairs,
 	}, nil
 }
