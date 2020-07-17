@@ -4,7 +4,7 @@
     export let openTask;
 
     function handleModal() {
-        window.$('.ui.modal').modal('show')
+        window.$('#create.ui.modal').modal('show')
     }
 
 </script>

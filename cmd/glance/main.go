@@ -27,13 +27,17 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	c, _ := glance.NewCreateService(db)
+	hub := glance.NewChathub()
+	c, _ := glance.NewCreateService(db, hub)
 	g, _ := glance.NewGetService(db)
 	server := otohttp.NewServer()
 	generated.RegisterCreateService(server, c)
 	generated.RegisterGetService(server, g)
 
+	go hub.Run()
+
 	r := mux.NewRouter()
+	r.PathPrefix("/ws").HandlerFunc(hub.HandleConnection())
 	r.PathPrefix("/build").Handler(http.FileServer(http.Dir("frontend/public/")))
 	r.PathPrefix("/deps").Handler(http.FileServer(http.Dir("frontend/public/")))
 	r.PathPrefix("/oto").Handler(server)

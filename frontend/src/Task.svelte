@@ -27,15 +27,15 @@
 {#if card}
     <div id="task" class="ui modal">
         <div class="content">
-            <h1 class="header">{card.title || ""}</h1>
-            <p>{card.content || ""}</p>
+            <h1 class="header">{card.title}</h1>
+            <p>{card.content}</p>
         </div>
         <div class="actions">
             {#if card.claimed}
                 {#await usersCardID}
                     <div class="ui segment">
                         <div class="ui active inverted dimmer">
-                            <div class="ui text loader">Loading</div>
+                            <!-- <div class="ui text loader">Loading</div> -->
                         </div>
                     </div>
                 {:then usersCardID}

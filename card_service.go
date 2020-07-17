@@ -11,12 +11,16 @@ import (
 // CreateService wraps the database and implements the CreateService
 // interface from oto.
 type CreateService struct {
-	db Database
+	db  Database
+	hub *chathub
 }
 
 // NewCreateService returns a CreateService wrapping the provided database.
-func NewCreateService(db Database) (*CreateService, error) {
-	return &CreateService{db}, nil
+func NewCreateService(db Database, hub *chathub) (*CreateService, error) {
+	return &CreateService{
+		db:  db,
+		hub: hub,
+	}, nil
 }
 
 // Card creates and saves a new card.
@@ -33,6 +37,7 @@ func (c *CreateService) Card(ctx context.Context, r generated.CreateCardRequest)
 		return &generated.CardResponse{Error: err.Error()}, err
 	}
 
+	c.hub.broadcast <- "new-card"
 	return cardResponse(card), nil
 }
 
@@ -49,6 +54,7 @@ func (c *CreateService) User(ctx context.Context, r generated.CreateUserRequest)
 		return &generated.UserResponse{Error: err.Error()}, err
 	}
 
+	c.hub.broadcast <- "new-user"
 	return userResponse(user), nil
 }
 
@@ -58,6 +64,7 @@ func (c *CreateService) ClaimCard(ctx context.Context, r generated.ClaimRequest)
 		return &generated.CardResponse{Error: err.Error()}, err
 	}
 
+	c.hub.broadcast <- "claim-card"
 	return cardResponse(card), nil
 }
 
@@ -67,6 +74,7 @@ func (c *CreateService) UpdateStatus(ct context.Context, r generated.NewStatusRe
 		return &generated.CardResponse{Error: err.Error()}, err
 	}
 
+	c.hub.broadcast <- "update-status"
 	return cardResponse(card), nil
 }
 

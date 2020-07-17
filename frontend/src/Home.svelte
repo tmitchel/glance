@@ -5,6 +5,20 @@
   import Unclaimed from "./Unclaimed.svelte";
   import { CreateService, GetService } from "../../generated/oto.gen.js";
 
+  const socket = new WebSocket("ws://localhost:8080/ws");
+  socket.onmessage = (msg) => {
+    console.log(msg.data);
+    if (msg.data === "new-card") {
+      cardPromise = getCard();
+    } else if (msg.data === "new-user") {
+
+    } else if (msg.data === "claim-card") {
+      cardPromise = getCard();
+    } else if (msg.data === "update-status") {
+      userPromise = getUser();
+    }
+  };
+
   // create services
   export let createService = new CreateService();
   export let getService = new GetService();
@@ -14,27 +28,25 @@
     status: 0
   };
 
-  let cardPromise = async function() {
+  async function getCard() {
     try {
       return await getService.cards({});
     } catch(err) {
       console.log(err)
     }
-  }()
+  }
 
-  // createService.user({
-  //   name: "Abdollah Mohammadi",
-  //   email: "amohammadi@gmail.com",
-  //   password: "test-password"
-  // });
+  $: cardPromise = getCard()
 
-  let userPromise = async function() {
+  async function getUser() {
     try {
       return await getService.homePage({email: "tylerbmitchell6@gmail.com"});
     } catch(err) {
       console.log(err);
     }
-  }()
+  }
+
+  let userPromise = getUser();
   
   function color(status) {
     if (status === 1) {

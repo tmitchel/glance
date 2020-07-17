@@ -12,7 +12,7 @@
     }
 </script>
 
-<div class="ui modal">
+<div class="ui modal" id="create">
   <div class="header">New Task</div>
   <form class="ui form content">
     <div class="field">
