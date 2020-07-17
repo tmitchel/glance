@@ -52,5 +52,5 @@ func main() {
 		http.ServeFile(w, r, "frontend/public/index.html")
 	})
 
-	logrus.Fatal(http.ListenAndServe(":8080", r))
+	logrus.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), r))
 }
