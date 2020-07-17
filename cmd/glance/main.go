@@ -14,15 +14,21 @@ import (
 )
 
 func main() {
-	// load environment variables from .env file
-	err := godotenv.Load()
-	if err != nil {
-		logrus.Error("Error loading .env file")
+	var dbConn string
+	if os.Getenv("PRODDY") == "true" {
+		dbConn = os.Getenv("DATABASE_URL")
+	} else {
+		// load environment variables from .env file
+		err := godotenv.Load()
+		if err != nil {
+			logrus.Error("Error loading .env file")
+		}
+		dbConn = fmt.Sprintf("host=localhost port=5432 user=%s "+
+			"password=%s dbname=%s sslmode=disable",
+			os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
 	}
 
-	db, err := glance.OpenDatabase(fmt.Sprintf("host=localhost port=5432 user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB")))
+	db, err := glance.OpenDatabase(dbConn)
 	if err != nil {
 		logrus.Fatal(err)
 	}
