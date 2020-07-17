@@ -45,6 +45,26 @@ export class CreateService {
 		})
 	}
 	
+	async finalize(claimRequest) {
+		const headers = {
+			'Accept':		'application/json',
+			'Accept-Encoding':	'gzip',
+			'Content-Type':		'application/json',
+		}
+		claimRequest = claimRequest || {}
+		const response = await fetch('/oto/CreateService.Finalize', {
+			method: 'POST',
+			headers: headers,
+			body: JSON.stringify(claimRequest)
+		})
+		return response.json().then((json) => {
+			if (json.error) {
+				throw new Error(json.error)
+			}
+			return json
+		})
+	}
+	
 	async updateStatus(newStatusRequest) {
 		const headers = {
 			'Accept':		'application/json',

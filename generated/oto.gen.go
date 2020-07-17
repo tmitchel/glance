@@ -15,6 +15,7 @@ import (
 type CreateService interface {
 	Card(context.Context, CreateCardRequest) (*CardResponse, error)
 	ClaimCard(context.Context, ClaimRequest) (*CardResponse, error)
+	Finalize(context.Context, ClaimRequest) (*CardResponse, error)
 	UpdateStatus(context.Context, NewStatusRequest) (*CardResponse, error)
 	User(context.Context, CreateUserRequest) (*UserResponse, error)
 }
@@ -39,6 +40,7 @@ func RegisterCreateService(server *otohttp.Server, createService CreateService) 
 	}
 	server.Register("CreateService", "Card", handler.handleCard)
 	server.Register("CreateService", "ClaimCard", handler.handleClaimCard)
+	server.Register("CreateService", "Finalize", handler.handleFinalize)
 	server.Register("CreateService", "UpdateStatus", handler.handleUpdateStatus)
 	server.Register("CreateService", "User", handler.handleUser)
 }
@@ -68,6 +70,24 @@ func (s *createServiceServer) handleClaimCard(w http.ResponseWriter, r *http.Req
 		return
 	}
 	response, err := s.createService.ClaimCard(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+}
+
+func (s *createServiceServer) handleFinalize(w http.ResponseWriter, r *http.Request) {
+	var request ClaimRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.createService.Finalize(r.Context(), request)
 	if err != nil {
 		log.Println("TODO: oto service error:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

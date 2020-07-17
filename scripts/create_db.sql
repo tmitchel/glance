@@ -20,8 +20,8 @@ CREATE TABLE users (
 
 DROP TABLE IF EXISTS cards_users CASCADE;
 CREATE TABLE cards_users (
-    card_id VARCHAR(36),
-    user_id VARCHAR(36),
+    card_id VARCHAR(36) UNIQUE,
+    user_id VARCHAR(36) UNIQUE,
     FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE CASCADE,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 )

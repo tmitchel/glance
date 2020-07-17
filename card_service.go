@@ -78,6 +78,16 @@ func (c *CreateService) UpdateStatus(ct context.Context, r generated.NewStatusRe
 	return cardResponse(card), nil
 }
 
+func (c *CreateService) Finalize(ct context.Context, r generated.ClaimRequest) (*generated.CardResponse, error) {
+	card, err := c.db.UnclaimCard(r.UserID, r.CardID)
+	if err != nil {
+		return &generated.CardResponse{Error: err.Error()}, err
+	}
+
+	c.hub.broadcast <- "finalize"
+	return cardResponse(card), nil
+}
+
 // GetService wraps the database and implements the GetService
 // interface from oto.
 type GetService struct {

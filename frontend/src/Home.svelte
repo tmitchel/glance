@@ -2,6 +2,7 @@
   import Task from "./Task.svelte";
   import Create from "./Create.svelte";
   import Summary from "./Summary.svelte";
+  import Completed from "./Completed.svelte";
   import Unclaimed from "./Unclaimed.svelte";
   import { CreateService, GetService } from "../../generated/oto.gen.js";
 
@@ -11,10 +12,15 @@
     if (msg.data === "new-card") {
       cardPromise = getCard();
     } else if (msg.data === "new-user") {
-
+      userPromise = getUser();
     } else if (msg.data === "claim-card") {
       cardPromise = getCard();
+      userPromise = getUser();
     } else if (msg.data === "update-status") {
+      cardPromise = getCard();
+      userPromise = getUser();
+    } else if (msg.data === "finalize") {
+      cardPromise = getCard();
       userPromise = getUser();
     }
   };
@@ -27,6 +33,8 @@
     content: "",
     status: 0
   };
+
+  // createService.user({name: "Tyler Mitchell", email: "tylerbmitchell6@gmail.com", password: "password"})
 
   async function getCard() {
     try {
@@ -77,7 +85,7 @@
 
   let volunteer = async function(userID, cardID) {
     try {
-      createService.claimCard({userID: "888aabf9-6289-4b74-afc6-976a4a74ad4a", cardID: cardID})
+      createService.claimCard({userID: "eccc6483-e77b-4584-8ca8-3a434635d917", cardID: cardID})
     } catch(err) {
       console.log(err);
     }
@@ -88,5 +96,6 @@
 <!-- Bring everything in -->
 <svelte:component this={Summary} cardColumns={cardColumns} userPromise={userPromise} color={color} openTask={openTask}></svelte:component>
 <svelte:component this={Unclaimed} cardColumns={cardColumns} cardPromise={cardPromise} openTask={openTask}></svelte:component>
+<svelte:component this={Completed} cardColumns={cardColumns} cardPromise={cardPromise} openTask={openTask}></svelte:component>
 <svelte:component this={Create} createService={createService}></svelte:component>
 <svelte:component this={Task} card={card} volunteer={volunteer}  createService={createService} usersCardID={userPromise}></svelte:component>

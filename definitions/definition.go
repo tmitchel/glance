@@ -7,6 +7,7 @@ type CreateService interface {
 	User(CreateUserRequest) UserResponse
 	ClaimCard(ClaimRequest) CardResponse
 	UpdateStatus(NewStatusRequest) CardResponse
+	Finalize(ClaimRequest) CardResponse
 }
 
 type GetService interface {

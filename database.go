@@ -29,6 +29,7 @@ type Database interface {
 	CreateCard(Card) error
 	CreateUser(User) error
 	ClaimCard(string, string) (Card, error)
+	UnclaimCard(string, string) (Card, error)
 	UpdateStatus(string, string, int) (Card, error)
 
 	Close()
@@ -192,15 +193,36 @@ func (d *database) CreateUser(u User) error {
 
 func (d *database) ClaimCard(uid, cid string) (Card, error) {
 	var c Card
-	_, err := psql.Insert("cards_users").
-		Columns("user_id", "card_id").
-		Values(uid, cid).
+	_, err := psql.Update("cards_users").
+		Set("card_id", cid).
+		Where(sq.Eq{"user_id": uid}).
 		RunWith(d.DB).Exec()
 	if err != nil {
 		return c, err
 	}
 
 	_, err = psql.Update("cards").Set("claimed", true).Where(sq.Eq{"id": cid}).RunWith(d.DB).Exec()
+	if err != nil {
+		return c, err
+	}
+
+	err = psql.Select("id", "title", "content", "status", "creator", "claimed", "created_at").
+		From("cards").Where(sq.Eq{"id": cid}).RunWith(d.DB).QueryRow().
+		Scan(&c.ID, &c.Title, &c.Content, &c.Status, &c.Creator, &c.Claimed, &c.CreatedAt)
+	return c, err
+}
+
+func (d *database) UnclaimCard(uid, cid string) (Card, error) {
+	var c Card
+	_, err := psql.Update("cards_users").
+		Set("card_id", nil).
+		Where(sq.Eq{"user_id": uid}).
+		RunWith(d.DB).Exec()
+	if err != nil {
+		return c, err
+	}
+
+	_, err = psql.Update("cards").Set("claimed", false).Where(sq.Eq{"id": cid}).RunWith(d.DB).Exec()
 	if err != nil {
 		return c, err
 	}
