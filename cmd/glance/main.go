@@ -28,6 +28,7 @@ func main() {
 			os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
 	}
 
+	logrus.Infof("DB connection: %v", dbConn)
 	db, err := glance.OpenDatabase(dbConn)
 	if err != nil {
 		logrus.Fatal(err)
