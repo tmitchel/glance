@@ -17,10 +17,6 @@
 
 <main>
 	<h1>Glance</h1>
-	<!-- <p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
-	<button class="ui button" on:click|once={handleClick}>
-		Follow
-	</button> -->
 </main>
 <div class="ui container">
 	<svelte:component this={page} params={params}></svelte:component>
